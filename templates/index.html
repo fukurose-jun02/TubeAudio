@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Audio Converter</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">♪</div>
+      <div>
+        <h1 class="header-title">YouTube Audio Converter</h1>
+        <p class="header-sub">YouTube の音楽を高音質でダウンロード</p>
+      </div>
+    </header>
+
+    <!-- URL Input -->
+    <section class="card">
+      <label class="label">YouTube URL</label>
+      <div class="url-row">
+        <input
+          id="urlInput"
+          type="text"
+          class="url-input"
+          placeholder="https://www.youtube.com/watch?v=..."
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button id="fetchBtn" class="btn btn-secondary" onclick="fetchInfo()">
+          情報取得
+        </button>
+      </div>
+    </section>
+
+    <!-- Video Info Card -->
+    <section id="infoCard" class="card info-card hidden">
+      <img id="thumbnail" class="thumbnail" src="" alt="thumbnail">
+      <div class="info-details">
+        <p id="infoTitle" class="info-title"></p>
+        <p id="infoChannel" class="info-channel"></p>
+        <div class="info-meta">
+          <span id="infoDuration" class="badge"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settingsCard" class="card hidden">
+      <div class="settings-row">
+        <div class="setting-group">
+          <label class="label">フォーマット</label>
+          <div class="toggle-group" id="formatGroup">
+            <button class="toggle-btn active" data-value="m4a" onclick="setFormat(this)">M4A</button>
+            <button class="toggle-btn" data-value="mp3" onclick="setFormat(this)">MP3</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="label">品質</label>
+          <div class="toggle-group" id="qualityGroup">
+            <button class="toggle-btn" data-value="128" onclick="setQuality(this)">128</button>
+            <button class="toggle-btn active" data-value="192" onclick="setQuality(this)">192</button>
+            <button class="toggle-btn" data-value="256" onclick="setQuality(this)">256</button>
+            <button class="toggle-btn" data-value="320" onclick="setQuality(this)">320</button>
+          </div>
+          <span class="quality-unit">kbps</span>
+        </div>
+      </div>
+
+      <button id="convertBtn" class="btn btn-primary btn-full" onclick="startConvert()">
+        変換を開始
+      </button>
+    </section>
+
+    <!-- Progress -->
+    <section id="progressCard" class="card hidden">
+      <div class="progress-header">
+        <span id="progressLabel" class="progress-label">準備中...</span>
+        <span id="progressPercent" class="progress-percent">0%</span>
+      </div>
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <div id="downloadSection" class="download-section hidden">
+        <div class="done-icon">✓</div>
+        <p id="doneTitle" class="done-title"></p>
+        <p id="doneSize" class="done-size"></p>
+        <button class="btn btn-primary" id="downloadBtn" onclick="downloadFile()">
+          ダウンロード
+        </button>
+        <button class="btn btn-ghost" onclick="resetApp()">別の動画を変換</button>
+      </div>
+
+      <div id="errorSection" class="error-section hidden">
+        <p class="error-text" id="errorText"></p>
+        <button class="btn btn-ghost" onclick="resetApp()">もう一度試す</button>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="card" id="historySection">
+      <div class="history-header">
+        <h2 class="section-title">変換履歴</h2>
+        <button class="btn btn-ghost btn-sm" onclick="loadHistory()">更新</button>
+      </div>
+      <ul id="historyList" class="history-list">
+        <li class="history-empty">まだ変換履歴がありません</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
