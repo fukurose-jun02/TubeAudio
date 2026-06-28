@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 @main
 struct TubeAudioApp: App {
+    @State private var audioPlayer = AudioPlayerManager()
+
+    init() {
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        try? AVAudioSession.sharedInstance().setActive(true)
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(audioPlayer)
         }
     }
 }

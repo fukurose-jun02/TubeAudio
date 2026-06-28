@@ -240,9 +240,8 @@ struct ConvertView: View {
 // MARK: - Library View
 
 struct LibraryView: View {
+    @Environment(AudioPlayerManager.self) var audioPlayer
     @State private var files: [URL] = []
-    @State private var playingURL: URL?
-    @State private var player: AVAudioPlayer?
 
     var body: some View {
         NavigationStack {
@@ -254,9 +253,9 @@ struct LibraryView: View {
                     List {
                         ForEach(files, id: \.self) { file in
                             HStack {
-                                Image(systemName: playingURL == file ? "pause.circle.fill" : "play.circle.fill")
+                                Image(systemName: audioPlayer.playingURL == file ? "pause.circle.fill" : "play.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(playingURL == file ? Color.orange : Color.accentColor)
+                                    .foregroundStyle(audioPlayer.playingURL == file ? Color.orange : Color.accentColor)
                                 VStack(alignment: .leading) {
                                     Text(file.deletingPathExtension().lastPathComponent)
                                         .font(.subheadline).fontWeight(.medium).lineLimit(1)
@@ -269,7 +268,7 @@ struct LibraryView: View {
                                 }
                             }
                             .contentShape(Rectangle())
-                            .onTapGesture { togglePlay(file) }
+                            .onTapGesture { audioPlayer.togglePlay(file) }
                         }
                         .onDelete(perform: deleteFiles)
                     }
@@ -285,17 +284,6 @@ struct LibraryView: View {
         files = (try? FileManager.default.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil))?
             .filter { ["m4a", "mp3"].contains($0.pathExtension.lowercased()) }
             .sorted { $0.lastPathComponent < $1.lastPathComponent } ?? []
-    }
-
-    func togglePlay(_ url: URL) {
-        if playingURL == url {
-            player?.stop(); playingURL = nil
-        } else {
-            try? AVAudioSession.sharedInstance().setCategory(.playback)
-            try? AVAudioSession.sharedInstance().setActive(true)
-            player = try? AVAudioPlayer(contentsOf: url)
-            player?.play(); playingURL = url
-        }
     }
 
     func deleteFiles(at offsets: IndexSet) {
