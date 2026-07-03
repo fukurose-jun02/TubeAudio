@@ -253,9 +253,9 @@ struct LibraryView: View {
                     List {
                         ForEach(files, id: \.self) { file in
                             HStack {
-                                Image(systemName: audioPlayer.playingURL == file ? "pause.circle.fill" : "play.circle.fill")
+                                Image(systemName: audioPlayer.playingURL == file && audioPlayer.isPlaying ? "pause.circle.fill" : "play.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(audioPlayer.playingURL == file ? Color.orange : Color.accentColor)
+                                    .foregroundStyle(audioPlayer.playingURL == file && audioPlayer.isPlaying ? Color.orange : Color.accentColor)
                                 VStack(alignment: .leading) {
                                     Text(file.deletingPathExtension().lastPathComponent)
                                         .font(.subheadline).fontWeight(.medium).lineLimit(1)

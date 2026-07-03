@@ -4,30 +4,32 @@ import MediaPlayer
 @Observable
 final class AudioPlayerManager: NSObject {
     var playingURL: URL?
+    private(set) var isPlaying = false
     private var player: AVAudioPlayer?
 
     override init() {
         super.init()
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.addTarget { [weak self] _ in
-            guard let self, let url = playingURL else { return .commandFailed }
-            play(url: url)
+            guard let self, self.player != nil else { return .commandFailed }
+            self.resume()
             return .success
         }
         center.pauseCommand.addTarget { [weak self] _ in
-            self?.stop()
+            guard let self, self.player != nil else { return .commandFailed }
+            self.pause()
             return .success
         }
         center.togglePlayPauseCommand.addTarget { [weak self] _ in
-            guard let self else { return .commandFailed }
-            if let url = playingURL { togglePlay(url) }
+            guard let self, let url = self.playingURL else { return .commandFailed }
+            self.togglePlay(url)
             return .success
         }
     }
 
     func togglePlay(_ url: URL) {
         if playingURL == url {
-            stop()
+            isPlaying ? pause() : resume()
         } else {
             play(url: url)
         }
@@ -40,6 +42,19 @@ final class AudioPlayerManager: NSObject {
         player?.delegate = self
         player?.play()
         playingURL = url
+        isPlaying = true
+        updateNowPlaying()
+    }
+
+    private func pause() {
+        player?.pause()
+        isPlaying = false
+        updateNowPlaying()
+    }
+
+    private func resume() {
+        player?.play()
+        isPlaying = true
         updateNowPlaying()
     }
 
@@ -47,6 +62,7 @@ final class AudioPlayerManager: NSObject {
         player?.stop()
         player = nil
         playingURL = nil
+        isPlaying = false
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
     }
 
@@ -56,14 +72,13 @@ final class AudioPlayerManager: NSObject {
             MPMediaItemPropertyTitle: url.deletingPathExtension().lastPathComponent,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: player.currentTime,
             MPMediaItemPropertyPlaybackDuration: player.duration,
-            MPNowPlayingInfoPropertyPlaybackRate: 1.0
+            MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0
         ]
     }
 }
 
 extension AudioPlayerManager: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        playingURL = nil
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        stop()
     }
 }
