@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Xcode (ios/)
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
+ios/build/
+ios/DerivedData/
+
+# Python (server/)
+server/downloads/
+server/__pycache__/
+server/*.pyc
+server/.env
+server/bin/
+
+# logs
+logs/
+ios/logs/
