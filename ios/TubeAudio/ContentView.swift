@@ -276,6 +276,11 @@ struct LibraryView: View {
             }
             .navigationTitle("ライブラリ")
             .onAppear(perform: loadFiles)
+            .safeAreaInset(edge: .bottom) {
+                if audioPlayer.playingURL != nil {
+                    PlaybackBar()
+                }
+            }
         }
     }
 
@@ -289,6 +294,59 @@ struct LibraryView: View {
     func deleteFiles(at offsets: IndexSet) {
         for i in offsets { try? FileManager.default.removeItem(at: files[i]) }
         loadFiles()
+    }
+}
+
+// MARK: - Playback Bar
+
+struct PlaybackBar: View {
+    @Environment(AudioPlayerManager.self) var audioPlayer
+    @State private var isDragging = false
+    @State private var dragTime: Double = 0
+
+    var body: some View {
+        if let url = audioPlayer.playingURL {
+            VStack(spacing: 6) {
+                HStack {
+                    Text(url.deletingPathExtension().lastPathComponent)
+                        .font(.subheadline).fontWeight(.medium).lineLimit(1)
+                    Spacer()
+                    Button {
+                        audioPlayer.togglePlay(url)
+                    } label: {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+                HStack(spacing: 8) {
+                    Text(formatTime(isDragging ? dragTime : audioPlayer.currentTime))
+                        .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                    Slider(
+                        value: Binding(
+                            get: { isDragging ? dragTime : audioPlayer.currentTime },
+                            set: { dragTime = $0 }
+                        ),
+                        in: 0...max(audioPlayer.duration, 1),
+                        onEditingChanged: { editing in
+                            isDragging = editing
+                            if !editing { audioPlayer.seek(to: dragTime) }
+                        }
+                    )
+                    .tint(Color.accentColor)
+                    Text(formatTime(audioPlayer.duration))
+                        .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+            .padding()
+            .background(.bar)
+        }
+    }
+
+    func formatTime(_ seconds: TimeInterval) -> String {
+        guard seconds.isFinite, seconds >= 0 else { return "0:00" }
+        let total = Int(seconds)
+        return String(format: "%d:%02d", total / 60, total % 60)
     }
 }
 
