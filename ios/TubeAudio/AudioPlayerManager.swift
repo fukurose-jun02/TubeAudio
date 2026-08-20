@@ -1,6 +1,12 @@
 import AVFoundation
 import MediaPlayer
 
+private struct PlaybackProgress: Codable {
+    var position: TimeInterval
+    var duration: TimeInterval
+    var isFinished: Bool
+}
+
 @Observable
 final class AudioPlayerManager: NSObject {
     var playingURL: URL?
@@ -9,7 +15,7 @@ final class AudioPlayerManager: NSObject {
     private(set) var duration: TimeInterval = 0
     private var player: AVAudioPlayer?
     private var progressTimer: Timer?
-    private let positionsKey = "playbackPositions"
+    private let progressKey = "playbackProgress"
 
     override init() {
         super.init()
@@ -43,22 +49,59 @@ final class AudioPlayerManager: NSObject {
         guard let player, let url = playingURL else { return }
         player.currentTime = time
         currentTime = time
-        savePosition(time, for: url)
+        saveProgress(position: time, duration: duration, isFinished: false, for: url)
         updateNowPlaying()
     }
 
+    /// 0...1の再生進捗率。再生中のファイルはライブ値を、それ以外は保存済みの値を返す。
+    func fractionCompleted(for url: URL) -> Double {
+        if url == playingURL, duration > 0 {
+            return min(max(currentTime / duration, 0), 1)
+        }
+        guard let entry = loadProgressStore()[url.lastPathComponent], entry.duration > 0 else { return 0 }
+        return entry.isFinished ? 1 : min(max(entry.position / entry.duration, 0), 1)
+    }
+
+    /// 再生位置に関係なく、一度でも再生を開始したファイルかを返す。
+    func hasStarted(_ url: URL) -> Bool {
+        playingURL == url || loadProgressStore()[url.lastPathComponent] != nil
+    }
+
+    /// ファイル削除前に再生を停止し、保存済みの再生状態も破棄する。
+    func removePlaybackState(for url: URL) {
+        if playingURL == url {
+            stop(finished: false)
+        }
+        clearProgress(for: url)
+    }
+
+    func clearProgress(for url: URL) {
+        var store = loadProgressStore()
+        store.removeValue(forKey: url.lastPathComponent)
+        saveProgressStore(store)
+    }
+
     private func play(url: URL) {
-        player?.stop()
         guard let newPlayer = try? AVAudioPlayer(contentsOf: url) else { return }
         newPlayer.currentTime = loadPosition(for: url)
+        guard newPlayer.prepareToPlay() else { return }
+
+        if playingURL != nil {
+            stop(finished: false)
+        }
+
         player = newPlayer
-        player?.delegate = self
-        player?.play()
+        newPlayer.delegate = self
         playingURL = url
-        isPlaying = true
         currentTime = newPlayer.currentTime
         duration = newPlayer.duration
-        startTimer()
+        isPlaying = newPlayer.play()
+        if isPlaying {
+            startTimer()
+        } else {
+            resetActivePlayer()
+            return
+        }
         updateNowPlaying()
     }
 
@@ -67,7 +110,7 @@ final class AudioPlayerManager: NSObject {
         isPlaying = false
         stopTimer()
         if let url = playingURL {
-            savePosition(currentTime, for: url)
+            saveProgress(position: currentTime, duration: duration, isFinished: false, for: url)
         }
         updateNowPlaying()
     }
@@ -79,10 +122,15 @@ final class AudioPlayerManager: NSObject {
         updateNowPlaying()
     }
 
-    private func stop() {
+    private func stop(finished: Bool) {
         if let url = playingURL {
-            clearPosition(for: url)
+            saveProgress(position: finished ? duration : currentTime, duration: duration, isFinished: finished, for: url)
         }
+        resetActivePlayer()
+    }
+
+    /// 保存済み進捗を変更せず、実行中のプレイヤー状態だけを破棄する。
+    private func resetActivePlayer() {
         player?.stop()
         player = nil
         playingURL = nil
@@ -109,25 +157,30 @@ final class AudioPlayerManager: NSObject {
         guard let player, let url = playingURL else { return }
         currentTime = player.currentTime
         duration = player.duration
-        savePosition(currentTime, for: url)
+        saveProgress(position: currentTime, duration: duration, isFinished: false, for: url)
         updateNowPlaying()
     }
 
     private func loadPosition(for url: URL) -> TimeInterval {
-        let positions = UserDefaults.standard.dictionary(forKey: positionsKey) as? [String: TimeInterval] ?? [:]
-        return positions[url.lastPathComponent] ?? 0
+        let entry = loadProgressStore()[url.lastPathComponent]
+        return entry?.isFinished == true ? 0 : (entry?.position ?? 0)
     }
 
-    private func savePosition(_ time: TimeInterval, for url: URL) {
-        var positions = UserDefaults.standard.dictionary(forKey: positionsKey) as? [String: TimeInterval] ?? [:]
-        positions[url.lastPathComponent] = time
-        UserDefaults.standard.set(positions, forKey: positionsKey)
+    private func loadProgressStore() -> [String: PlaybackProgress] {
+        guard let data = UserDefaults.standard.data(forKey: progressKey),
+              let store = try? JSONDecoder().decode([String: PlaybackProgress].self, from: data) else { return [:] }
+        return store
     }
 
-    private func clearPosition(for url: URL) {
-        var positions = UserDefaults.standard.dictionary(forKey: positionsKey) as? [String: TimeInterval] ?? [:]
-        positions.removeValue(forKey: url.lastPathComponent)
-        UserDefaults.standard.set(positions, forKey: positionsKey)
+    private func saveProgressStore(_ store: [String: PlaybackProgress]) {
+        guard let data = try? JSONEncoder().encode(store) else { return }
+        UserDefaults.standard.set(data, forKey: progressKey)
+    }
+
+    private func saveProgress(position: TimeInterval, duration: TimeInterval, isFinished: Bool, for url: URL) {
+        var store = loadProgressStore()
+        store[url.lastPathComponent] = PlaybackProgress(position: position, duration: duration, isFinished: isFinished)
+        saveProgressStore(store)
     }
 
     private func updateNowPlaying() {
@@ -143,6 +196,6 @@ final class AudioPlayerManager: NSObject {
 
 extension AudioPlayerManager: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        stop()
+        stop(finished: flag)
     }
 }

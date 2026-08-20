@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AA00000100000000AA000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		AA00000100000000AA000001 /* Exceptions for "TubeAudio" folder in "TubeAudio" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -24,7 +24,7 @@
 		B3ECF7362FE4D5A3001C6438 /* TubeAudio */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				AA00000100000000AA000001 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				AA00000100000000AA000001 /* Exceptions for "TubeAudio" folder in "TubeAudio" target */,
 			);
 			path = TubeAudio;
 			sourceTree = "<group>";
@@ -265,7 +265,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 6JQZ7QM955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -274,7 +274,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -293,7 +293,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 6JQZ7QM955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -302,7 +302,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
