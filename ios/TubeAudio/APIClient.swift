@@ -5,6 +5,7 @@ struct VideoInfo: Decodable {
     let title: String
     let thumbnail: String
     let channel: String
+    let channel_icon: String?
     let duration_str: String
 }
 
@@ -15,6 +16,10 @@ struct JobStatus: Decodable {
     let filename: String?
     let filesize: String?
     let error: String?
+    let channel: String?
+    let duration: Double?
+    let upload_date: String?
+    let view_count: Int?
 }
 
 @Observable

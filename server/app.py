@@ -1,6 +1,7 @@
 import os
 import threading
 import uuid
+from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify, render_template, send_file
 import yt_dlp
@@ -16,6 +17,8 @@ ffmpeg_dir = os.path.dirname(ffmpeg_exe)
 
 jobs = {}
 jobs_lock = threading.Lock()
+channel_icon_cache = {}
+channel_icon_cache_lock = threading.Lock()
 
 
 def format_duration(seconds):
@@ -32,6 +35,74 @@ def format_filesize(size_bytes):
     if size_bytes < 1024 * 1024:
         return f"{size_bytes / 1024:.1f} KB"
     return f"{size_bytes / (1024 * 1024):.1f} MB"
+
+
+def format_upload_date(raw_date):
+    if not raw_date:
+        return ""
+    try:
+        return datetime.strptime(raw_date, "%Y%m%d").strftime("%Y-%m-%d")
+    except ValueError:
+        return ""
+
+
+def select_channel_icon(thumbnails):
+    """チャンネルページのサムネイル一覧からアバター画像を選ぶ。"""
+    usable = [item for item in thumbnails or [] if item.get("url")]
+    if not usable:
+        return ""
+
+    uncropped = next(
+        (item for item in usable if item.get("id") == "avatar_uncropped"), None
+    )
+    if uncropped:
+        return uncropped["url"]
+
+    # yt-dlpはバナーのpreferenceを負数にする。正方形に近い候補を優先する。
+    avatar_candidates = [
+        item for item in usable if (item.get("preference") or 0) >= 0
+    ]
+    if not avatar_candidates:
+        return ""
+
+    def score(item):
+        width = item.get("width") or 0
+        height = item.get("height") or 0
+        square_score = -abs(width - height) if width and height else -1
+        return (square_score, width * height)
+
+    return max(avatar_candidates, key=score)["url"]
+
+
+def get_channel_icon(info):
+    """動画情報のチャンネルURLから発信者アイコンを取得し、チャンネル単位でキャッシュする。"""
+    channel_url = info.get("channel_url")
+    channel_id = info.get("channel_id")
+    cache_key = channel_id or channel_url
+    if not channel_url or not cache_key:
+        return ""
+
+    with channel_icon_cache_lock:
+        if cache_key in channel_icon_cache:
+            return channel_icon_cache[cache_key]
+
+    try:
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": True,
+            "playlistend": 1,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            channel_info = ydl.extract_info(channel_url, download=False)
+        icon_url = select_channel_icon(channel_info.get("thumbnails"))
+    except Exception:
+        # アイコン取得失敗で動画情報の取得全体を失敗させない。
+        icon_url = ""
+
+    with channel_icon_cache_lock:
+        channel_icon_cache[cache_key] = icon_url
+    return icon_url
 
 
 def make_progress_hook(job_id):
@@ -80,6 +151,10 @@ def run_conversion(url, quality, fmt, job_id):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
             title = info.get("title", "Unknown")
+            channel = info.get("uploader", "")
+            duration = info.get("duration", 0)
+            upload_date = format_upload_date(info.get("upload_date", ""))
+            view_count = info.get("view_count", 0)
 
         # Find the converted file
         pattern = f"*.{fmt}"
@@ -100,6 +175,10 @@ def run_conversion(url, quality, fmt, job_id):
                         "filename": file_path.name,
                         "filesize": format_filesize(file_path.stat().st_size),
                         "title": title,
+                        "channel": channel,
+                        "duration": duration,
+                        "upload_date": upload_date,
+                        "view_count": view_count,
                     }
                 )
         else:
@@ -129,11 +208,13 @@ def get_info():
         ydl_opts = {"quiet": True, "no_warnings": True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            channel_icon = get_channel_icon(info)
             return jsonify(
                 {
                     "title": info.get("title", ""),
                     "thumbnail": info.get("thumbnail", ""),
                     "channel": info.get("uploader", ""),
+                    "channel_icon": channel_icon,
                     "duration": info.get("duration", 0),
                     "duration_str": format_duration(info.get("duration", 0)),
                     "view_count": info.get("view_count", 0),
