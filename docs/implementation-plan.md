@@ -8,9 +8,9 @@
 
 ###### 現在の状態
 
-- **フェーズ**: 実装完了・実機（このMac）で動作確認済み・PRマージ待ち
+- **フェーズ**: 完了（実機確認済み・[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)マージ済み）
 - **最終更新**: 2026-09-22
-- **次にやること**: [PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)のレビュー・マージ
+- **次にやること**: なし。本機能はクローズ
 
 ###### 役割分担
 
@@ -22,8 +22,8 @@
 | `ios/TubeAudio/APIClient.swift`のデフォルト接続先をBonjourホスト名に変更する | AI | 完了 |
 | 実際に`~/Library/LaunchAgents/`へplistを配置し`launchctl load`で登録する | AI（ユーザー許可のもと実行） | 完了（このMacに登録済み） |
 | サーバーの自動起動・自動再起動を確認する | AI | 完了（`kill -9`後の自動再起動をPID変化で確認） |
-| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未着手（PRマージ後、実機のiOSアプリで確認予定） |
-| PRレビュー・マージ | ユーザー | 未着手（[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)） |
+| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未確認（Mac自身からの`curl`とSimulatorでは確認済み。実機iPhoneでの確認は任意） |
+| PRレビュー・マージ | ユーザー | 完了（[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)、2026-09-22マージ） |
 
 ###### 実装ステップ詳細
 
