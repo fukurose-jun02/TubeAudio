@@ -12,9 +12,10 @@
 
 ###### 現在の状態
 
-- **フェーズ**: 実装完了・mainにマージ済み（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)、2026-09-22マージ）
+- **フェーズ**: 完了（実機確認済み）
 - **最終更新**: 2026-09-22
-- **次にやること**: 実機（Mac+iPhone同一WiFi）での最終確認
+- **次にやること**: なし。本機能はクローズ
+- 実装（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)）に続き、実機確認で発見した検索APIのバグ（`videoId`欠落時の500エラー）を[PR #11](https://github.com/fukurose-jun02/TubeAudio/pull/11)で修正し、mainにマージ済み
 
 ###### 役割分担
 
@@ -29,7 +30,7 @@
 | `ios/TubeAudio/ContentView.swift`のタブ構成を更新する | AI | 完了 |
 | iOS Simulatorでビルド・動作確認する | AI | 完了（検索→タップ→変換→ライブラリ保存まで確認） |
 | PRレビュー・マージ | ユーザー | 完了（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)、2026-09-22マージ） |
-| 実機（Mac+iPhone同一WiFi）での検索→変換→ライブラリ保存の一連確認 | ユーザー＋AI | 未着手 |
+| 実機（Mac+iPhone同一WiFi）での検索→変換→ライブラリ保存の一連確認 | ユーザー＋AI | 完了（バグ発見・[PR #11](https://github.com/fukurose-jun02/TubeAudio/pull/11)で修正・マージ済み） |
 
 ###### 実装ステップ詳細
 
