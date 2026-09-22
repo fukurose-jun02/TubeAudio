@@ -12,22 +12,23 @@
 
 ###### 現在の状態
 
-- **フェーズ**: 計画完了・実装未着手
+- **フェーズ**: 実装完了・PRマージ待ち
 - **最終更新**: 2026-09-22
-- **次にやること**: ユーザーによるYouTube Data APIキー取得（下記「ユーザー側タスク」参照）→ サーバー実装 → iOS実装
+- **次にやること**: [PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)のレビュー・マージ → 実機（Mac+iPhone同一WiFi）での最終確認
 
 ###### 役割分担
 
 | タスク | 担当 | 状態 |
 |---|---|---|
-| Google Cloud ConsoleでYouTube Data API v3を有効化し、APIキーを取得する | ユーザー | 未着手 |
-| Macサーバーの起動環境に`YOUTUBE_API_KEY`を設定する | ユーザー（AIが設定方法を案内） | 未着手 |
-| `server/app.py`に`/api/search`エンドポイントを実装する | AI | 未着手 |
-| `server/README.md`にAPIエンドポイント・環境変数を追記する | AI | 未着手 |
-| `ios/TubeAudio/APIClient.swift`に検索メソッドを追加する | AI | 未着手 |
-| `ios/TubeAudio/SearchView.swift`を新規作成する | AI | 未着手 |
-| `ios/TubeAudio/ContentView.swift`のタブ構成を更新する | AI | 未着手 |
-| iOS Simulatorでビルド・動作確認する | AI | 未着手 |
+| Google Cloud ConsoleでYouTube Data API v3を有効化し、APIキーを取得する | ユーザー | 完了 |
+| Macサーバーの起動環境に`YOUTUBE_API_KEY`を設定する | ユーザー | 完了（`server/.env`に設定済み） |
+| `server/app.py`に`/api/search`エンドポイントを実装する | AI | 完了 |
+| `server/README.md`にAPIエンドポイント・環境変数を追記する | AI | 完了 |
+| `ios/TubeAudio/APIClient.swift`に検索メソッドを追加する | AI | 完了 |
+| `ios/TubeAudio/SearchView.swift`を新規作成する | AI | 完了 |
+| `ios/TubeAudio/ContentView.swift`のタブ構成を更新する | AI | 完了 |
+| iOS Simulatorでビルド・動作確認する | AI | 完了（検索→タップ→変換→ライブラリ保存まで確認） |
+| PRレビュー・マージ | ユーザー | 未着手（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)） |
 | 実機（Mac+iPhone同一WiFi）での検索→変換→ライブラリ保存の一連確認 | ユーザー＋AI | 未着手 |
 
 ###### 実装ステップ詳細
@@ -58,8 +59,8 @@
 
 ###### 完了条件（Definition of Done）
 
-- [ ] `requirements.md`の受け入れ基準をすべて満たす
-- [ ] サーバー・iOS双方でビルド／起動確認済み
+- [x] `requirements.md`の受け入れ基準をすべて満たす（Simulatorで確認済み）
+- [x] サーバー・iOS双方でビルド／起動確認済み
 - [ ] `logs/`に作業ログを記録し、判断ポイントがあれば`judgments.jsonl`に追記
-- [ ] 本ワークスペースルールに従い、コード変更はPR経由でmainにマージする
-- [ ] `docs/`3文書を実装後の最終状態に更新する
+- [ ] 本ワークスペースルールに従い、コード変更はPR経由でmainにマージする（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)、マージ待ち）
+- [x] `docs/`3文書を実装後の最終状態に更新する
