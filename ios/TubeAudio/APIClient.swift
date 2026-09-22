@@ -1,4 +1,5 @@
 import Foundation
+
 import Observation
 
 struct VideoInfo: Decodable {
@@ -7,6 +8,16 @@ struct VideoInfo: Decodable {
     let channel: String
     let channel_icon: String?
     let duration_str: String
+}
+
+struct SearchResult: Decodable, Identifiable {
+    let video_id: String
+    let url: String
+    let title: String
+    let channel: String
+    let thumbnail: String
+
+    var id: String { video_id }
 }
 
 struct JobStatus: Decodable {
@@ -29,7 +40,19 @@ class APIClient {
     }
 
     init() {
-        self.serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://192.168.1.6:5001"
+        self.serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://192.168.1.11:5001"
+    }
+
+    func search(query: String) async throws -> [SearchResult] {
+        var comps = URLComponents(string: "\(serverURL)/api/search")!
+        comps.queryItems = [URLQueryItem(name: "q", value: query)]
+        let (data, response) = try await URLSession.shared.data(from: comps.url!)
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            let message = (try? JSONDecoder().decode([String: String].self, from: data))?["error"]
+            throw NSError(domain: "", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: message ?? "検索に失敗しました"])
+        }
+        struct Wrapper: Decodable { let results: [SearchResult] }
+        return try JSONDecoder().decode(Wrapper.self, from: data).results
     }
 
     func fetchInfo(url: String) async throws -> VideoInfo {

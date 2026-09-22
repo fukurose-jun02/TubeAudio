@@ -31,6 +31,18 @@ cd youtube-audio-converter
 pip3 install -r requirements.txt
 ```
 
+### 動画検索を使う場合（任意）
+
+キーワード検索機能を使うには、YouTube Data API v3のAPIキーが必要です。
+
+1. [Google Cloud Console](https://console.cloud.google.com/)でYouTube Data API v3を有効化し、APIキーを発行する
+2. `server/.env`に以下を書き込む（`.gitignore`で除外済み）
+   ```
+   YOUTUBE_API_KEY=発行したキー
+   ```
+
+未設定の場合、検索以外の機能（URL貼り付けでの変換）は従来どおり利用できます。
+
 ## 起動方法
 
 ```bash
@@ -48,6 +60,7 @@ MacとiPhoneを同じWiFiに接続した状態でサーバーを起動すると�
 | メソッド | パス | 説明 |
 |---|---|---|
 | POST | `/api/info` | 動画情報の取得 |
+| GET | `/api/search?q=<キーワード>` | キーワードによる動画検索（YouTube Data API v3、要APIキー） |
 | POST | `/api/convert` | 変換開始（job_id を返す） |
 | GET | `/api/status/<job_id>` | 変換進捗の確認 |
 | GET | `/api/download/<job_id>` | ファイルのダウンロード |
