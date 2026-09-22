@@ -8,21 +8,22 @@
 
 ###### 現在の状態
 
-- **フェーズ**: 計画完了・実装未着手
+- **フェーズ**: 実装完了・実機（このMac）で動作確認済み・PRマージ待ち
 - **最終更新**: 2026-09-22
-- **次にやること**: `server/com.fukurose.tubeaudio.plist`の作成 → `setup.sh`更新 → iOS側のデフォルト接続先変更 → 実際にlaunchdへ登録して動作確認
+- **次にやること**: [PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)のレビュー・マージ
 
 ###### 役割分担
 
 | タスク | 担当 | 状態 |
 |---|---|---|
-| `server/com.fukurose.tubeaudio.plist`テンプレートを作成する | AI | 未着手 |
-| `server/setup.sh`にLaunchAgentインストール手順を追加する | AI | 未着手 |
-| `server/README.md`に自動起動・アンインストール手順を追記する | AI | 未着手 |
-| `ios/TubeAudio/APIClient.swift`のデフォルト接続先をBonjourホスト名に変更する | AI | 未着手 |
-| 実際に`~/Library/LaunchAgents/`へplistを配置し`launchctl load`で登録する | AI（ユーザー許可のもと実行） | 未着手 |
-| Macを再ログイン（またはlaunchctl経由で再現）してサーバーが自動起動することを確認する | ユーザー＋AI | 未着手 |
-| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未着手 |
+| `server/com.fukurose.tubeaudio.plist`テンプレートを作成する | AI | 完了 |
+| `server/setup.sh`にLaunchAgentインストール手順を追加する | AI | 完了 |
+| `server/README.md`に自動起動・アンインストール手順を追記する | AI | 完了 |
+| `ios/TubeAudio/APIClient.swift`のデフォルト接続先をBonjourホスト名に変更する | AI | 完了 |
+| 実際に`~/Library/LaunchAgents/`へplistを配置し`launchctl load`で登録する | AI（ユーザー許可のもと実行） | 完了（このMacに登録済み） |
+| サーバーの自動起動・自動再起動を確認する | AI | 完了（`kill -9`後の自動再起動をPID変化で確認） |
+| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未着手（PRマージ後、実機のiOSアプリで確認予定） |
+| PRレビュー・マージ | ユーザー | 未着手（[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)） |
 
 ###### 実装ステップ詳細
 
