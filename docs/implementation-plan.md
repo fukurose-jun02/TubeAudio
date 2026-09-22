@@ -1,67 +1,51 @@
-# YouTube動画キーワード検索機能 - 実装計画書
+# サーバー起動とMac接続先設定の自動化 - 実装計画書
 
 前提: [requirements.md](requirements.md)・[design.md](design.md) を参照。
 
 ###### この文書の役割（重要）
 
-この`docs/`配下の3文書は、このタスクの「状態を書き出した記憶」として運用する。
-
-- 作業開始時、AIはこの3文書（requirements.md / design.md / implementation-plan.md）を読み込んでから提案・実装を行う
-- 実装中に仕様・設計・進捗が変わった場合、AIは該当箇所（特に下記「現在の状態」とタスク一覧のチェック）を自分で書き換えて最新に保ち、変更した旨をユーザーに報告する
-- これにより、別セッション・別AIが引き継いでも、この文書を読むだけで「どこまで終わっていて、次に何をするか」が分かる状態を維持する
+この`docs/`配下の3文書は、このタスクの「状態を書き出した記憶」として運用する。作業開始時、AIはこの3文書を読み込んでから提案・実装を行う。実装中に仕様・設計・進捗が変わった場合、AIは該当箇所を自分で書き換えて最新に保ち、変更した旨をユーザーに報告する。
 
 ###### 現在の状態
 
-- **フェーズ**: 完了（実機確認済み）
+- **フェーズ**: 計画完了・実装未着手
 - **最終更新**: 2026-09-22
-- **次にやること**: なし。本機能はクローズ
-- 実装（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)）に続き、実機確認で発見した検索APIのバグ（`videoId`欠落時の500エラー）を[PR #11](https://github.com/fukurose-jun02/TubeAudio/pull/11)で修正し、mainにマージ済み
+- **次にやること**: `server/com.fukurose.tubeaudio.plist`の作成 → `setup.sh`更新 → iOS側のデフォルト接続先変更 → 実際にlaunchdへ登録して動作確認
 
 ###### 役割分担
 
 | タスク | 担当 | 状態 |
 |---|---|---|
-| Google Cloud ConsoleでYouTube Data API v3を有効化し、APIキーを取得する | ユーザー | 完了 |
-| Macサーバーの起動環境に`YOUTUBE_API_KEY`を設定する | ユーザー | 完了（`server/.env`に設定済み） |
-| `server/app.py`に`/api/search`エンドポイントを実装する | AI | 完了 |
-| `server/README.md`にAPIエンドポイント・環境変数を追記する | AI | 完了 |
-| `ios/TubeAudio/APIClient.swift`に検索メソッドを追加する | AI | 完了 |
-| `ios/TubeAudio/SearchView.swift`を新規作成する | AI | 完了 |
-| `ios/TubeAudio/ContentView.swift`のタブ構成を更新する | AI | 完了 |
-| iOS Simulatorでビルド・動作確認する | AI | 完了（検索→タップ→変換→ライブラリ保存まで確認） |
-| PRレビュー・マージ | ユーザー | 完了（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)、2026-09-22マージ） |
-| 実機（Mac+iPhone同一WiFi）での検索→変換→ライブラリ保存の一連確認 | ユーザー＋AI | 完了（バグ発見・[PR #11](https://github.com/fukurose-jun02/TubeAudio/pull/11)で修正・マージ済み） |
+| `server/com.fukurose.tubeaudio.plist`テンプレートを作成する | AI | 未着手 |
+| `server/setup.sh`にLaunchAgentインストール手順を追加する | AI | 未着手 |
+| `server/README.md`に自動起動・アンインストール手順を追記する | AI | 未着手 |
+| `ios/TubeAudio/APIClient.swift`のデフォルト接続先をBonjourホスト名に変更する | AI | 未着手 |
+| 実際に`~/Library/LaunchAgents/`へplistを配置し`launchctl load`で登録する | AI（ユーザー許可のもと実行） | 未着手 |
+| Macを再ログイン（またはlaunchctl経由で再現）してサーバーが自動起動することを確認する | ユーザー＋AI | 未着手 |
+| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未着手 |
 
 ###### 実装ステップ詳細
 
-1. **サーバー: 検索エンドポイント実装**
-   - `os.environ.get("YOUTUBE_API_KEY")`を読み込み、未設定時は`/api/search`が`503`を返すようにする
-   - `requests`（未導入なら`requirements.txt`に追加）でYouTube Data API v3を呼び出す
-   - レスポンスを`design.md`記載のJSON形式に整形する
-2. **サーバー: ドキュメント更新**
-   - `server/README.md`のAPIエンドポイント表・セットアップ手順に環境変数の設定方法を追記する
-3. **iOS: APIClient拡張**
-   - `SearchResult`構造体、`search(query:)`メソッドを追加
-   - サーバーエラー時、レスポンスの`error`メッセージをそのまま`errorMessage`として使えるようにする
-4. **iOS: 検索タブUI**
-   - `SearchView.swift`を新規作成し、`ContentView`の`TabView`に追加
-   - 検索結果タップで即座に変換を開始する処理を実装する（`ConvertView`の変換ロジックとの重複を許容するか共通化するかは実装時に判断し、この文書に結果を追記する）
-5. **動作確認**
-   - `xcodebuild ... -sdk iphonesimulator ... build`でビルド成功を確認
-   - サーバーを起動し、`curl "http://localhost:5001/api/search?q=test"`でレスポンスを確認
-   - 実機で検索→タップ→変換→ライブラリ保存までを確認
+1. **LaunchAgent plistテンプレート作成**
+   - `server/com.fukurose.tubeaudio.plist`に、このMac環境のpython3絶対パス・プロジェクト絶対パスを埋め込んで作成する
+2. **setup.sh更新**
+   - LaunchAgentのインストール手順（コピー＋`launchctl load -w`）を追記する
+3. **README更新**
+   - `server/README.md`に自動起動の仕組み・ログの場所（`server/run.log`）・アンインストール手順を追記する
+4. **iOS側デフォルト接続先変更**
+   - `APIClient.swift`の初期値をこのMacのBonjourホスト名（`http://fukuroseatsushinomacbook-air.local:5001`）に変更する
+5. **実際の登録・動作確認**
+   - `~/Library/LaunchAgents/com.fukurose.tubeaudio.plist`にコピーし`launchctl load -w`で登録
+   - `launchctl kickstart`等でプロセスを再起動させ、自動再起動することを確認
+   - `curl http://<ホスト名>.local:5001/`で疎通確認
 
-###### ユーザー側タスク（着手前に必要な準備）
+###### ユーザー側タスク
 
-1. [Google Cloud Console](https://console.cloud.google.com/)でプロジェクトを作成（または既存のものを使用）
-2. 「APIとサービス」→「ライブラリ」から **YouTube Data API v3** を有効化
-3. 「認証情報」からAPIキーを発行（用途を絞りたい場合はYouTube Data API v3への制限を推奨）
-4. 発行したAPIキーをAIに渡すか、Macのサーバー起動環境（例: `server/.env`や起動シェルの`export YOUTUBE_API_KEY=...`）に設定する
+- 実機での最終確認：Macを再ログインしてもサーバーが起動していること、iPhoneからアプリを使えることを確認する
 
 ###### 完了条件（Definition of Done）
 
-- [x] `requirements.md`の受け入れ基準をすべて満たす（Simulatorで確認済み）
-- [x] サーバー・iOS双方でビルド／起動確認済み
+- [ ] `requirements.md`の受け入れ基準をすべて満たす
 - [ ] `logs/`に作業ログを記録し、判断ポイントがあれば`judgments.jsonl`に追記
-- [x] 本ワークスペースルールに従い、コード変更はPR経由でmainにマージする（[PR #10](https://github.com/fukurose-jun02/TubeAudio/pull/10)、2026-09-22マージ済み）
-- [x] `docs/`3文書を実装後の最終状態に更新する
+- [ ] コード変更（iOS・server）はPR経由でmainにマージする
+- [ ] `docs/`3文書を実装後の最終状態に更新する

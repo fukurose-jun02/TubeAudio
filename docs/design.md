@@ -1,106 +1,68 @@
-# YouTube動画キーワード検索機能 - 設計書
+# サーバー起動とMac接続先設定の自動化 - 設計書
 
 前提: [requirements.md](requirements.md) の要件・決定事項に基づく。
 
 ###### 全体構成
 
 ```
-iOS App (SearchView)
-   │  GET /api/search?q=キーワード
+Macログイン
+   │  launchd（RunAtLoad + KeepAlive）
    ▼
-Flask Server (app.py)
-   │  YouTube Data API v3: search.list （APIキーはサーバー環境変数）
+python3 server/app.py が自動起動・自動再起動
+   │  0.0.0.0:5001 で待受（Bonjour/mDNSで <ホスト名>.local として名前解決可能）
    ▼
-YouTube Data API v3
+iPhone（TubeAudioアプリ）
+   │  デフォルト接続先: http://<Macのホスト名>.local:5001
+   ▼
+既存の変換・検索・ライブラリ機能（変更なし）
 ```
 
-- 既存の変換フロー（`ConvertView` → `/api/info` → `/api/convert` → `/api/status` → `/api/download`）はそのまま流用する
-- 検索は「URLを取得する手段」を1つ増やすだけで、変換ロジック自体には手を入れない
+macOSは標準でBonjour（mDNS）が有効なため、追加のサーバー側実装なしに`<ホスト名>.local`での名前解決が可能（本セッションで`ping fukuroseatsushinomacbook-air.local`により動作確認済み）。iOS側もBonjour解決に標準対応している。
 
-###### サーバー側設計（`server/app.py`）
+###### 自動起動（launchd LaunchAgent）
 
-**環境変数**
+**新規ファイル: `server/com.fukurose.tubeaudio.plist`**（テンプレートとしてリポジトリに含め、インストール時にユーザーのホームディレクトリ配下へコピーする）
 
-- `YOUTUBE_API_KEY`: YouTube Data API v3のAPIキー。未設定時は`/api/search`が明確なエラーを返す
-- `.env`等での管理も可とするが、リポジトリにはコミットしない（`.gitignore`確認済み・追加が必要なら追記する）
+- `Label`: `com.fukurose.tubeaudio`
+- `ProgramArguments`: `[<python3の絶対パス>, <server/app.pyの絶対パス>]`
+- `WorkingDirectory`: `server/`ディレクトリの絶対パス（`downloads/`等の相対パス解決のため）
+- `RunAtLoad`: `true`（ログイン時に自動起動）
+- `KeepAlive`: `true`（プロセスが終了したら自動再起動）
+- `StandardOutPath` / `StandardErrorPath`: `server/run.log`（gitignore対象、`server/README.md`にログの見方を記載）
 
-**新規エンドポイント**
+**インストール手順（`server/setup.sh`に追記）**
 
-```
-GET /api/search?q=<キーワード>
-```
+1. plistテンプレート内のプレースホルダ（python3パス・プロジェクトパス）を実際の環境の値に置換
+2. `~/Library/LaunchAgents/com.fukurose.tubeaudio.plist`にコピー
+3. `launchctl load -w ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist` で登録・起動
 
-- YouTube Data API v3 `https://www.googleapis.com/youtube/v3/search` を呼び出す
-  - `part=snippet&type=video&maxResults=20&q=<キーワード>&key=<YOUTUBE_API_KEY>`
-- レスポンス整形例:
+**アンインストール手順（`server/README.md`に記載）**
 
-```json
-{
-  "results": [
-    {
-      "video_id": "xxxxxxxxxxx",
-      "url": "https://www.youtube.com/watch?v=xxxxxxxxxxx",
-      "title": "動画タイトル",
-      "channel": "チャンネル名",
-      "thumbnail": "https://i.ytimg.com/vi/xxxxxxxxxxx/mqdefault.jpg"
-    }
-  ]
-}
+```bash
+launchctl unload ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist
+rm ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist
 ```
 
-- `search.list`のレスポンスには再生時間が含まれないため、初期スコープでは再生時間は表示しない（F2の「取得できれば」に対応。必要になれば`videos.list`を追加で1回呼び、`contentDetails.duration`を合成する拡張を将来検討）
-- エラーハンドリング:
-  - `YOUTUBE_API_KEY`未設定 → `503`、`{"error": "サーバーにYouTube APIキーが設定されていません"}`
-  - Google API側のクォータ超過・エラー → `502`、Google側のエラーメッセージを含めて返す
-  - キーワード未指定 → `400`
+###### 接続先の安定化（iOS側）
 
-###### iOS側設計
+**変更ファイル: `ios/TubeAudio/APIClient.swift`**
 
-**新規ファイル: `ios/TubeAudio/SearchView.swift`**
+- `serverURL`の初期値（`UserDefaults`未設定時のデフォルト）を、固定IPアドレスからMacのBonjourホスト名ベースのURLに変更する
+  - 例: `http://fukuroseatsushinomacbook-air.local:5001`
+- 既存ユーザー（すでにIPアドレスを設定済み）の`UserDefaults`には影響しない。あくまで「初期値」のみの変更
+- `ios/README.md`または`SettingsView`のヘルプ文言に、IPアドレスの代わりに`.local`ホスト名が使える旨を追記する
 
-- `ContentView`の`TabView`に3番目のタブとして追加（変換・検索・ライブラリ・設定の順、または変換の直後）
-- 画面構成:
-  - 検索バー（`TextField` + 検索ボタン、`onSubmit`対応）
-  - 結果一覧（`List`）: サムネイル・タイトル・チャンネル名
-  - 状態: `idle` / `searching` / `results` / `empty` / `error`
+###### 動作しなくなるケースと対処
 
-**タップ時の挙動（F3）**
-
-- 検索結果タップ → 選択した動画の`url`を保持 → `ConvertView`と同等の処理（`fetchInfo` → `startConvert` → ポーリング → ダウンロード → `LibraryMetadataStore.save`）を実行し、進捗を検索タブ内に表示する
-- 実装方針: `ConvertView`内の変換ロジック（`fetchInfo`/`startConvert`/`pollUntilDone`）を再利用できるよう、共通処理を小さなヘルパー（例: `ConversionRunner`のような構造体 or 既存関数の外出し）に切り出すか、`SearchView`から`ConvertView`のロジックを直接呼べる形にする。既存の`ConvertView`の実装を壊さないよう、まずは重複実装を許容し、動作確認後に共通化するかを判断する（実装計画で決定）
-
-**APIClient拡張（`ios/TubeAudio/APIClient.swift`）**
-
-```swift
-struct SearchResult: Decodable {
-    let video_id: String
-    let url: String
-    let title: String
-    let channel: String
-    let thumbnail: String
-}
-
-func search(query: String) async throws -> [SearchResult] {
-    var comps = URLComponents(string: "\(serverURL)/api/search")!
-    comps.queryItems = [URLQueryItem(name: "q", value: query)]
-    let (data, response) = try await URLSession.shared.data(from: comps.url!)
-    // ステータスコードに応じてサーバー側のエラーメッセージをthrowする
-    ...
-    struct Wrapper: Decodable { let results: [SearchResult] }
-    return try JSONDecoder().decode(Wrapper.self, from: data).results
-}
-```
-
-###### エラー表示方針
-
-- サーバー未起動・APIキー未設定・クォータ超過のいずれも、`ConvertView`と同様に「原因がユーザーに伝わる日本語メッセージ」を表示する（既存の`errorMessage`パターンを踏襲）
+- ルーター・WiFi環境によってはmDNS（Bonjour）が制限されている場合がある。その場合は従来どおりIPアドレスを手動設定すれば動作する（設定画面のテキストフィールドはIP・ホスト名どちらも入力可能な自由記述のまま変更しない）
+- Macがスリープ状態だとlaunchdで起動したサーバーにも到達できない。これは今回のスコープ外（Macを起こしておく必要がある旨をREADMEに明記する）
 
 ###### 影響範囲まとめ
 
 | ファイル | 変更内容 |
 |---|---|
-| `server/app.py` | `/api/search`エンドポイント追加、`YOUTUBE_API_KEY`読み込み |
-| `server/README.md` | APIエンドポイント表に`/api/search`を追記、環境変数の説明を追記 |
-| `ios/TubeAudio/APIClient.swift` | `SearchResult`構造体、`search(query:)`メソッド追加 |
-| `ios/TubeAudio/SearchView.swift`（新規） | 検索タブのUIとロジック |
-| `ios/TubeAudio/ContentView.swift` | `TabView`に検索タブを追加 |
+| `server/com.fukurose.tubeaudio.plist`（新規） | launchd用のLaunchAgent定義テンプレート |
+| `server/setup.sh` | LaunchAgentのインストール手順を追加 |
+| `server/.gitignore` | `run.log`を追加 |
+| `server/README.md` | 自動起動のインストール・アンインストール手順、ログの見方を追記 |
+| `ios/TubeAudio/APIClient.swift` | デフォルト接続先をBonjourホスト名に変更 |
