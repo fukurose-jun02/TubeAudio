@@ -258,16 +258,21 @@ def search():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"YouTube検索に失敗しました: {str(e)}"}), 502
 
-    results = [
-        {
-            "video_id": item["id"]["videoId"],
-            "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
-            "title": html.unescape(item["snippet"]["title"]),
-            "channel": html.unescape(item["snippet"]["channelTitle"]),
-            "thumbnail": item["snippet"]["thumbnails"].get("medium", {}).get("url", ""),
-        }
-        for item in data.get("items", [])
-    ]
+    results = []
+    for item in data.get("items", []):
+        video_id = item.get("id", {}).get("videoId")
+        if not video_id:
+            # type=videoを指定していても、videoIdを持たない結果が稀に混ざるためスキップする
+            continue
+        results.append(
+            {
+                "video_id": video_id,
+                "url": f"https://www.youtube.com/watch?v={video_id}",
+                "title": html.unescape(item["snippet"]["title"]),
+                "channel": html.unescape(item["snippet"]["channelTitle"]),
+                "thumbnail": item["snippet"]["thumbnails"].get("medium", {}).get("url", ""),
+            }
+        )
     return jsonify({"results": results})
 
 
