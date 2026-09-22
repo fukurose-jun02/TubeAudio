@@ -51,9 +51,22 @@ python3 app.py
 
 ブラウザで `http://localhost:5001` を開いてください。
 
+### 自動起動（任意）
+
+毎回手動で起動するのが面倒な場合、`setup.sh`実行時に「Macのログイン時にサーバーを自動起動しますか？」と聞かれるので `y` と答えると、macOSのLaunchAgentとして登録されます。
+
+- ログイン時に自動起動し、プロセスが落ちても自動的に再起動します
+- ログは `server/run.log` に出力されます
+- 解除する場合:
+  ```bash
+  launchctl unload ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist
+  rm ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist
+  ```
+- Macがスリープしている間はサーバーにアクセスできません
+
 ## iPhoneから使う場合
 
-MacとiPhoneを同じWiFiに接続した状態でサーバーを起動すると、iPhoneの [TubeAudio iOS アプリ](https://github.com/fukurose-jun02/TubeAudio-iOS) から利用できます。
+MacとiPhoneを同じWiFiに接続した状態でサーバーを起動すると、iPhoneの [TubeAudio iOS アプリ](https://github.com/fukurose-jun02/TubeAudio-iOS) から利用できます。「設定」タブの接続先は、MacのIPアドレスの代わりに `http://<Macのホスト名>.local:5001` のようなBonjourホスト名でも指定できます（IPアドレスが変わっても打ち直す必要がなくなります）。Macのホスト名は「システム設定 > 一般 > 共有」の「ローカルホスト名」で確認できます。
 
 ## API エンドポイント
 

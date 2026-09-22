@@ -732,15 +732,15 @@ struct SettingsView: View {
             Form {
                 Section("サーバー接続") {
                     HStack {
-                        Text("Mac の IP")
+                        Text("Macの接続先")
                         Spacer()
-                        TextField("http://192.168.x.x:5001", text: $api.serverURL)
+                        TextField("http://xxxx.local:5001", text: $api.serverURL)
                             .multilineTextAlignment(.trailing)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .foregroundStyle(.secondary)
                     }
-                    Text("Mac で `python3 app.py` を起動し、同じWiFiに接続してください。")
+                    Text("IPアドレスの代わりに `http://Macのホスト名.local:5001` も指定できます（IPアドレスが変わっても打ち直し不要）。Macでサーバーを起動し、同じWiFiに接続してください。")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section("使い方") {

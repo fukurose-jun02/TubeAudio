@@ -13,6 +13,7 @@ server/__pycache__/
 server/*.pyc
 server/.env
 server/bin/
+server/run.log
 
 # logs
 logs/
