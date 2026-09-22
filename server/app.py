@@ -1,16 +1,23 @@
+import html
 import os
 import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template, send_file
+import requests
 import yt_dlp
 from static_ffmpeg import run as ffmpeg_run
+
+load_dotenv()
 
 app = Flask(__name__)
 
 DOWNLOADS_DIR = Path("downloads")
 DOWNLOADS_DIR.mkdir(exist_ok=True)
+
+YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 
 ffmpeg_exe, _ = ffmpeg_run.get_or_fetch_platform_executables_else_raise()
 ffmpeg_dir = os.path.dirname(ffmpeg_exe)
@@ -222,6 +229,46 @@ def get_info():
             )
     except Exception as e:
         return jsonify({"error": f"動画情報の取得に失敗しました: {str(e)}"}), 400
+
+
+@app.route("/api/search")
+def search():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return jsonify({"error": "検索キーワードを入力してください"}), 400
+
+    api_key = os.environ.get("YOUTUBE_API_KEY")
+    if not api_key:
+        return jsonify({"error": "サーバーにYouTube APIキーが設定されていません"}), 503
+
+    try:
+        response = requests.get(
+            YOUTUBE_SEARCH_URL,
+            params={
+                "part": "snippet",
+                "type": "video",
+                "maxResults": 20,
+                "q": query,
+                "key": api_key,
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"YouTube検索に失敗しました: {str(e)}"}), 502
+
+    results = [
+        {
+            "video_id": item["id"]["videoId"],
+            "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
+            "title": html.unescape(item["snippet"]["title"]),
+            "channel": html.unescape(item["snippet"]["channelTitle"]),
+            "thumbnail": item["snippet"]["thumbnails"].get("medium", {}).get("url", ""),
+        }
+        for item in data.get("items", [])
+    ]
+    return jsonify({"results": results})
 
 
 @app.route("/api/convert", methods=["POST"])

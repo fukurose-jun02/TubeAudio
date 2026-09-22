@@ -11,6 +11,8 @@ struct ContentView: View {
         TabView {
             ConvertView()
                 .tabItem { Label("変換", systemImage: "arrow.down.circle.fill") }
+            SearchView()
+                .tabItem { Label("検索", systemImage: "magnifyingglass") }
             LibraryView()
                 .tabItem { Label("ライブラリ", systemImage: "music.note.list") }
             SettingsView()
