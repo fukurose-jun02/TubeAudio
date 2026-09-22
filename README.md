@@ -6,6 +6,7 @@ YouTubeの音声をiPhoneでダウンロード・再生できるアプリ一式�
 TubeAudio/
   ios/      SwiftUI製iOSアプリ（TubeAudio.xcodeproj）
   server/   Flask製変換サーバー（app.py）
+  docs/     開発中の機能の要件定義書・設計書・実装計画書
 ```
 
 ## 構成
@@ -14,6 +15,7 @@ TubeAudio/
 |---|---|---|
 | [`ios/`](ios/README.md) | iPhone側アプリ。URL入力・変換指示・ライブラリ再生を行う | [ios/README.md](ios/README.md) |
 | [`server/`](server/README.md) | Mac側サーバー。yt-dlp/ffmpegでYouTube音声をM4A/MP3に変換する | [server/README.md](server/README.md) |
+| [`docs/`](docs/requirements.md) | 開発中機能の要件定義書・設計書・実装計画書（実装状況に応じてAIが更新） | [docs/implementation-plan.md](docs/implementation-plan.md) |
 
 両者は同一WiFi内でHTTP通信し、iOSアプリがMacのサーバーAPI（`/api/info`, `/api/convert` など）を呼び出す構成です。
 
