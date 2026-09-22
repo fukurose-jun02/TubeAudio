@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "TubeAudio Server",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["app.py"],
+      "cwd": "server",
+      "port": 5001
+    }
+  ]
+}
