@@ -40,7 +40,7 @@ class APIClient {
     }
 
     init() {
-        self.serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://192.168.1.11:5001"
+        self.serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://fukuroseatsushinomacbook-air.local:5001"
     }
 
     func search(query: String) async throws -> [SearchResult] {
