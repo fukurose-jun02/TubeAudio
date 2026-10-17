@@ -66,3 +66,14 @@ rm ~/Library/LaunchAgents/com.fukurose.tubeaudio.plist
 | `server/.gitignore` | `run.log`を追加 |
 | `server/README.md` | 自動起動のインストール・アンインストール手順、ログの見方を追記 |
 | `ios/TubeAudio/APIClient.swift` | デフォルト接続先をBonjourホスト名に変更 |
+
+###### 追補（Issue #14）：保存済み接続先の自動移行
+
+**変更ファイル: `ios/TubeAudio/APIClient.swift`、`ios/TubeAudio/ContentView.swift`**
+
+- 背景：v1.07で変えたのは`serverURL`の初期値だけで、`UserDefaults`に保存済みの古いIPアドレスは残り続け、MacのIPが変わると再び繋がらなくなった
+- `APIClient.init()`で、移行済みフラグ（`UserDefaults`キー`serverURLMigratedToHostname`）が未設定のときだけ実行する
+  - 保存済みURLのホストがIPv4形式（`^\d{1,3}(\.\d{1,3}){3}$`）なら、`defaultServerURL`（Bonjourホスト名）に置き換える
+  - 置き換えの有無にかかわらずフラグを立てる → 以後に手動で入れたIPアドレスは上書きしない（mDNSが使えないWiFi環境の回避策を残すため）
+- `APIClient.resetServerURL()`を追加し、設定画面の「初期値に戻す」ボタンから呼ぶ（すでに初期値のときはボタンを無効化）
+- バージョンを1.07→1.08に更新（`MARKETING_VERSION`）
