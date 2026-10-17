@@ -19,7 +19,7 @@ Macで動く [YouTube Audio Converter](https://github.com/fukurose-jun02/youtube
 |---|---|
 | 変換 | URL入力・フォーマット選択・変換実行 |
 | ライブラリ | ダウンロード済みファイルの再生・共有 |
-| 設定 | MacサーバーのIPアドレス設定 |
+| 設定 | Macサーバーの接続先設定（IPアドレス・`.local`ホスト名どちらも可。「初期値に戻す」ボタンあり） |
 
 ## 必要なもの
 
@@ -43,7 +43,7 @@ git clone https://github.com/fukurose-jun02/TubeAudio-iOS.git
 ## 使い方
 
 1. MacでFlaskサーバーを起動（`python3 app.py`）
-2. アプリの「設定」タブでMacのIPアドレスを確認（デフォルト: `http://192.168.1.6:5001`）
+2. アプリの「設定」タブでMacの接続先を確認（デフォルト: `http://fukuroseatsushinomacbook-air.local:5001`。保存済みの接続先がIPアドレスの場合、v1.08の初回起動時に1回だけこのホスト名へ自動で置き換わる）
 3. 「変換」タブにYouTube URLを貼り付けて「取得」
 4. フォーマット・品質を選んで「変換を開始」
 5. 完了後「ライブラリ」タブで再生

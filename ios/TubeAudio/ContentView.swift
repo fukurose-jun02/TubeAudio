@@ -742,6 +742,8 @@ struct SettingsView: View {
                     }
                     Text("IPアドレスの代わりに `http://Macのホスト名.local:5001` も指定できます（IPアドレスが変わっても打ち直し不要）。Macでサーバーを起動し、同じWiFiに接続してください。")
                         .font(.caption).foregroundStyle(.secondary)
+                    Button("初期値に戻す") { api.resetServerURL() }
+                        .disabled(api.serverURL == APIClient.defaultServerURL)
                 }
                 Section("使い方") {
                     Label("URLを貼り付けて「取得」", systemImage: "1.circle.fill")
