@@ -39,8 +39,29 @@ class APIClient {
         didSet { UserDefaults.standard.set(serverURL, forKey: "serverURL") }
     }
 
+    static let defaultServerURL = "http://fukuroseatsushinomacbook-air.local:5001"
+    private static let migratedKey = "serverURLMigratedToHostname"
+
     init() {
-        self.serverURL = UserDefaults.standard.string(forKey: "serverURL") ?? "http://fukuroseatsushinomacbook-air.local:5001"
+        let defaults = UserDefaults.standard
+        var url = defaults.string(forKey: "serverURL") ?? Self.defaultServerURL
+        // 保存済みの接続先がIPアドレス形式なら、1回だけホスト名へ移行する（IP変更で繋がらなくなるのを防ぐ）。
+        // 移行後に手動でIPアドレスを入れ直した場合は、フラグがあるため上書きしない
+        if !defaults.bool(forKey: Self.migratedKey) {
+            if Self.isIPAddressURL(url) { url = Self.defaultServerURL }
+            defaults.set(true, forKey: Self.migratedKey)
+            defaults.set(url, forKey: "serverURL")
+        }
+        self.serverURL = url
+    }
+
+    func resetServerURL() {
+        serverURL = Self.defaultServerURL
+    }
+
+    private static func isIPAddressURL(_ urlString: String) -> Bool {
+        guard let host = URL(string: urlString)?.host else { return false }
+        return host.range(of: #"^\d{1,3}(\.\d{1,3}){3}$"#, options: .regularExpression) != nil
     }
 
     func search(query: String) async throws -> [SearchResult] {
