@@ -12,6 +12,7 @@ Macで動く [YouTube Audio Converter](https://github.com/fukurose-jun02/youtube
 - 変換進捗のリアルタイム表示
 - ライブラリタブで再生・一時停止
 - AirDrop・ファイルアプリへの共有
+- YouTubeアプリ・Safariの共有メニューから「TubeAudio」を選ぶだけで、URLが入力済みの状態でアプリを開ける（v1.09〜）
 
 ## 画面構成
 
@@ -40,6 +41,8 @@ git clone https://github.com/fukurose-jun02/TubeAudio-iOS.git
 3. ▶ ボタンでビルド・インストール
 4. iPhoneの「設定 → 一般 → VPNとデバイス管理」で証明書を信頼
 
+共有メニュー用の拡張機能（`TubeAudioShare`）は、アプリ本体と一緒に自動でインストールされます。アプリ本体と拡張機能は、App Group（`group.com.fukurose.TubeAudio`）でURLを受け渡します。
+
 ## 使い方
 
 1. MacでFlaskサーバーを起動（`python3 app.py`）
@@ -47,3 +50,12 @@ git clone https://github.com/fukurose-jun02/TubeAudio-iOS.git
 3. 「変換」タブにYouTube URLを貼り付けて「取得」
 4. フォーマット・品質を選んで「変換を開始」
 5. 完了後「ライブラリ」タブで再生
+
+### YouTubeの共有メニューから使う（v1.09〜）
+
+1. YouTubeアプリで動画の「共有」を開き、アプリの一覧から「TubeAudio」を選ぶ（「追加しました」と表示される）
+2. TubeAudioを開くと、「変換」タブにURLが入り、動画情報の取得まで自動で進む
+3. あとは「変換を開始」を押す
+
+- 共有メニューに「TubeAudio」が見当たらないときは、アプリ一覧を右端までスクロールして「その他」を開き、「TubeAudio」をオンにする
+- 変換中に共有したURLは、変換が終わってから取り込まれる
