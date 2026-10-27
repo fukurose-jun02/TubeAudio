@@ -6,8 +6,37 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AA00000300000000AA000003 /* TubeAudioShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AA00000200000000AA000002 /* TubeAudioShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA00000400000000AA000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B3ECF72C2FE4D5A3001C6438 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA00000500000000AA000005;
+			remoteInfo = TubeAudioShare;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AA00000600000000AA000006 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				AA00000300000000AA000003 /* TubeAudioShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TubeAudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00000200000000AA000002 /* TubeAudioShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TubeAudioShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TubeAudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -15,8 +44,17 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				TubeAudio.entitlements,
 			);
 			target = B3ECF7332FE4D5A3001C6438 /* TubeAudio */;
+		};
+		AA00000700000000AA000007 /* Exceptions for "TubeAudioShare" folder in "TubeAudioShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				TubeAudioShare.entitlements,
+			);
+			target = AA00000500000000AA000005 /* TubeAudioShare */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -29,10 +67,25 @@
 			path = TubeAudio;
 			sourceTree = "<group>";
 		};
+		AA00000800000000AA000008 /* TubeAudioShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA00000700000000AA000007 /* Exceptions for "TubeAudioShare" folder in "TubeAudioShare" target */,
+			);
+			path = TubeAudioShare;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B3ECF7312FE4D5A3001C6438 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA00000900000000AA000009 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				B3ECF7362FE4D5A3001C6438 /* TubeAudio */,
+				AA00000800000000AA000008 /* TubeAudioShare */,
 				B3ECF7352FE4D5A3001C6438 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */,
+				AA00000200000000AA000002 /* TubeAudioShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -68,10 +123,12 @@
 				B3ECF7302FE4D5A3001C6438 /* Sources */,
 				B3ECF7312FE4D5A3001C6438 /* Frameworks */,
 				B3ECF7322FE4D5A3001C6438 /* Resources */,
+				AA00000600000000AA000006 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				AA00000A00000000AA00000A /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B3ECF7362FE4D5A3001C6438 /* TubeAudio */,
@@ -82,6 +139,28 @@
 			productName = TubeAudio;
 			productReference = B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AA00000500000000AA000005 /* TubeAudioShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA00000D00000000AA00000D /* Build configuration list for PBXNativeTarget "TubeAudioShare" */;
+			buildPhases = (
+				AA00000B00000000AA00000B /* Sources */,
+				AA00000900000000AA000009 /* Frameworks */,
+				AA00000C00000000AA00000C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AA00000800000000AA000008 /* TubeAudioShare */,
+			);
+			name = TubeAudioShare;
+			packageProductDependencies = (
+			);
+			productName = TubeAudioShare;
+			productReference = AA00000200000000AA000002 /* TubeAudioShare.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -94,6 +173,9 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					B3ECF7332FE4D5A3001C6438 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					AA00000500000000AA000005 = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -113,12 +195,20 @@
 			projectRoot = "";
 			targets = (
 				B3ECF7332FE4D5A3001C6438 /* TubeAudio */,
+				AA00000500000000AA000005 /* TubeAudioShare */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		B3ECF7322FE4D5A3001C6438 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA00000C00000000AA00000C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +225,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA00000B00000000AA00000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA00000A00000000AA00000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA00000500000000AA000005 /* TubeAudioShare */;
+			targetProxy = AA00000400000000AA000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		B3ECF73D2FE4D5A5001C6438 /* Debug */ = {
@@ -264,8 +369,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TubeAudio/TubeAudio.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 6JQZ7QM955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -274,7 +380,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.08;
+				MARKETING_VERSION = 1.09;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -292,8 +398,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TubeAudio/TubeAudio.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 6JQZ7QM955;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -302,10 +409,64 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.08;
+				MARKETING_VERSION = 1.09;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AA00000E00000000AA00000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TubeAudioShare/TubeAudioShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = 6JQZ7QM955;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TubeAudioShare/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.09;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA00000F00000000AA00000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TubeAudioShare/TubeAudioShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = 6JQZ7QM955;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TubeAudioShare/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.09;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -332,6 +493,15 @@
 			buildConfigurations = (
 				B3ECF7402FE4D5A5001C6438 /* Debug */,
 				B3ECF7412FE4D5A5001C6438 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA00000D00000000AA00000D /* Build configuration list for PBXNativeTarget "TubeAudioShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA00000E00000000AA00000E /* Debug */,
+				AA00000F00000000AA00000F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

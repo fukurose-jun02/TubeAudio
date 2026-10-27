@@ -6,19 +6,34 @@ import UIKit
 
 struct ContentView: View {
     @State var api = APIClient()
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var selectedTab = Tab.convert
+    // 共有メニューから受け取ったURL。ConvertViewが取り込んだらnilに戻る
+    @State private var incomingURL: String?
+
+    enum Tab { case convert, search, library, settings }
 
     var body: some View {
-        TabView {
-            ConvertView()
+        TabView(selection: $selectedTab) {
+            ConvertView(incomingURL: $incomingURL)
                 .tabItem { Label("変換", systemImage: "arrow.down.circle.fill") }
+                .tag(Tab.convert)
             SearchView()
                 .tabItem { Label("検索", systemImage: "magnifyingglass") }
+                .tag(Tab.search)
             LibraryView()
                 .tabItem { Label("ライブラリ", systemImage: "music.note.list") }
+                .tag(Tab.library)
             SettingsView()
                 .tabItem { Label("設定", systemImage: "gearshape.fill") }
+                .tag(Tab.settings)
         }
         .environment(api)
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            guard phase == .active, let url = SharedURLInbox.take() else { return }
+            selectedTab = .convert
+            incomingURL = url
+        }
     }
 }
 
@@ -26,6 +41,7 @@ struct ContentView: View {
 
 struct ConvertView: View {
     @Environment(APIClient.self) var api
+    @Binding var incomingURL: String?
     @State private var urlText = ""
     @State private var videoInfo: VideoInfo?
     @State private var selectedFormat = "m4a"
@@ -187,7 +203,19 @@ struct ConvertView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("TubeAudio")
+            .onChange(of: incomingURL, initial: true) { consumeIncomingURL() }
+            .onChange(of: phase) { consumeIncomingURL() }
         }
+    }
+
+    // 共有メニューから受け取ったURLを入力欄へ入れて、動画情報の取得まで進める。
+    // 変換中は進行中の表示を壊さないよう保留し、終わってから取り込む
+    func consumeIncomingURL() {
+        guard let url = incomingURL, phase != .converting, phase != .fetchingInfo else { return }
+        incomingURL = nil
+        resetApp()
+        urlText = url
+        Task { await fetchInfo() }
     }
 
     func fetchInfo() async {
