@@ -1,4 +1,4 @@
-# サーバー起動とMac接続先設定の自動化 - 実装計画書
+# YouTube共有メニューからのURL取り込み - 実装計画書
 
 前提: [requirements.md](requirements.md)・[design.md](design.md) を参照。
 
@@ -8,57 +8,40 @@
 
 ###### 現在の状態
 
-- **フェーズ**: 完了（実機確認済み・[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)マージ済み）
-- **最終更新**: 2026-09-22
-- **次にやること**: なし。本機能はクローズ
+- **フェーズ**: 実装中
+- **最終更新**: 2026-10-27
+- **関連**: [Issue #17](https://github.com/fukurose-jun02/TubeAudio/issues/17)
+- **次にやること**: 拡張機能ターゲットの追加とアプリ側の受け取り処理の実装
+- 前の機能（サーバー自動起動、Issue #12・#14）の文書は `docs/archive/2026-09_サーバー自動起動/` に退避済み
 
 ###### 役割分担
 
 | タスク | 担当 | 状態 |
 |---|---|---|
-| `server/com.fukurose.tubeaudio.plist`テンプレートを作成する | AI | 完了 |
-| `server/setup.sh`にLaunchAgentインストール手順を追加する | AI | 完了 |
-| `server/README.md`に自動起動・アンインストール手順を追記する | AI | 完了 |
-| `ios/TubeAudio/APIClient.swift`のデフォルト接続先をBonjourホスト名に変更する | AI | 完了 |
-| 実際に`~/Library/LaunchAgents/`へplistを配置し`launchctl load`で登録する | AI（ユーザー許可のもと実行） | 完了（このMacに登録済み） |
-| サーバーの自動起動・自動再起動を確認する | AI | 完了（`kill -9`後の自動再起動をPID変化で確認） |
-| iPhoneから`.local`ホスト名でアクセスできることを確認する | ユーザー | 未確認（Mac自身からの`curl`とSimulatorでは確認済み。実機iPhoneでの確認は任意） |
-| PRレビュー・マージ | ユーザー | 完了（[PR #13](https://github.com/fukurose-jun02/TubeAudio/pull/13)、2026-09-22マージ） |
+| Issue作成 | AI | 完了（#17） |
+| 開発文書の作成（既存docsはarchiveへ退避） | AI | 完了 |
+| 拡張機能ターゲットの追加（pbxproj・Info.plist・entitlements） | AI | 未着手 |
+| 共有拡張のコード（URL抽出・判定・保存・表示） | AI | 未着手 |
+| アプリ側の受け取り処理（ContentView・SharedURLInbox） | AI | 未着手 |
+| バージョン1.09への更新、READMEの更新 | AI | 未着手 |
+| Simulatorでビルド・受け取り処理の確認 | AI | 未着手 |
+| PR作成 | AI | 未着手 |
+| 実機にインストールし、YouTubeの共有から動作確認 | ユーザー | 未着手 |
+| Xcodeで署名（Signing）の設定が必要な場合の対応 | ユーザー | 状況次第 |
+| PRレビュー・マージ | ユーザー | 未着手 |
 
-###### 実装ステップ詳細
+###### 実装ステップ
 
-1. **LaunchAgent plistテンプレート作成**
-   - `server/com.fukurose.tubeaudio.plist`に、このMac環境のpython3絶対パス・プロジェクト絶対パスを埋め込んで作成する
-2. **setup.sh更新**
-   - LaunchAgentのインストール手順（コピー＋`launchctl load -w`）を追記する
-3. **README更新**
-   - `server/README.md`に自動起動の仕組み・ログの場所（`server/run.log`）・アンインストール手順を追記する
-4. **iOS側デフォルト接続先変更**
-   - `APIClient.swift`の初期値をこのMacのBonjourホスト名（`http://fukuroseatsushinomacbook-air.local:5001`）に変更する
-5. **実際の登録・動作確認**
-   - `~/Library/LaunchAgents/com.fukurose.tubeaudio.plist`にコピーし`launchctl load -w`で登録
-   - `launchctl kickstart`等でプロセスを再起動させ、自動再起動することを確認
-   - `curl http://<ホスト名>.local:5001/`で疎通確認
+1. ブランチ`feature/17-share-extension`を作る
+2. 拡張機能のファイル（`ShareViewController.swift`、`Info.plist`、entitlements）を作る
+3. `project.pbxproj`に拡張機能ターゲット・同梱設定・権限ファイル指定を追加し、バージョンを1.09にする
+4. `SharedURLInbox.swift`と`ContentView.swift`を変更する
+5. Simulator用にビルドし、保管場所へURLを書いた状態での受け取りを確認する
+6. `ios/README.md`を更新し、PRを作る
+7. ユーザーが実機で確認し、結果に応じてこの文書を完了状態へ更新する
 
-###### ユーザー側タスク
+###### 確認のポイント（実機）
 
-- 実機での最終確認：Macを再ログインしてもサーバーが起動していること、iPhoneからアプリを使えることを確認する
-
-###### 完了条件（Definition of Done）
-
-- [ ] `requirements.md`の受け入れ基準をすべて満たす
-- [ ] `logs/`に作業ログを記録し、判断ポイントがあれば`judgments.jsonl`に追記
-- [ ] コード変更（iOS・server）はPR経由でmainにマージする
-- [ ] `docs/`3文書を実装後の最終状態に更新する
-
-###### 追補（Issue #14）：保存済み接続先の自動移行
-
-- **フェーズ**: 実装完了・[PR #15](https://github.com/fukurose-jun02/TubeAudio/pull/15)マージ済み（2026-10-17）
-- **次にやること**: 実機iPhoneへv1.08をインストールして自動移行を確認する
-
-| タスク | 担当 | 状態 |
-|---|---|---|
-| 保存済みIPアドレスの自動移行・「初期値に戻す」ボタン・v1.08への更新 | AI | 完了 |
-| Simulatorでの動作確認（移行・手動IPの保持） | AI | 完了 |
-| PR #15のレビュー・マージ | ユーザー | 完了（2026-10-17） |
-| 実機iPhoneへのv1.08インストールと、接続できることの確認 | ユーザー | 未 |
+- 無料のApple IDでApp Groupと拡張機能が署名・インストールできるか
+- YouTubeアプリの共有メニューに「TubeAudio」が出るか（出ない場合は「その他」で有効化）
+- 共有後にアプリを開くと、URLが入り動画情報が表示されるか
