@@ -11,16 +11,13 @@ struct ContentView: View {
     // 共有メニューから受け取ったURL。ConvertViewが取り込んだらnilに戻る
     @State private var incomingURL: String?
 
-    enum Tab { case convert, search, library, settings }
+    enum Tab { case convert, library, settings }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             ConvertView(incomingURL: $incomingURL)
                 .tabItem { Label("変換", systemImage: "arrow.down.circle.fill") }
                 .tag(Tab.convert)
-            SearchView()
-                .tabItem { Label("検索", systemImage: "magnifyingglass") }
-                .tag(Tab.search)
             LibraryView()
                 .tabItem { Label("ライブラリ", systemImage: "music.note.list") }
                 .tag(Tab.library)
@@ -51,8 +48,15 @@ struct ConvertView: View {
     @State private var progressLabel = ""
     @State private var downloadedURL: URL?
     @State private var errorMessage = ""
+    @State private var searchResults: [SearchResult] = []
 
-    enum Phase { case idle, fetchingInfo, ready, converting, done, error }
+    enum Phase { case idle, fetchingInfo, searching, results, ready, converting, done, error }
+
+    // URLらしければ動画情報を取得、そうでなければキーワードとして検索する
+    private var isURLInput: Bool {
+        let text = urlText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return text.hasPrefix("http") || text.contains("youtu.be") || text.contains("youtube.com")
+    }
 
     var body: some View {
         NavigationStack {
@@ -61,28 +65,67 @@ struct ConvertView: View {
 
                     // URL Input
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("YOUTUBE URL").font(.caption).foregroundStyle(.secondary)
+                        Text("YOUTUBE URL / キーワード").font(.caption).foregroundStyle(.secondary)
                         HStack {
-                            TextField("https://www.youtube.com/watch?v=...", text: $urlText)
+                            TextField("URLまたはキーワード", text: $urlText)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                                 .submitLabel(.go)
-                                .onSubmit { Task { await fetchInfo() } }
+                                .onSubmit { Task { await submitInput() } }
                                 .padding(12)
                                 .background(Color(.systemGray6))
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
-                            Button("取得") { Task { await fetchInfo() } }
+                            Button(isURLInput ? "取得" : "検索") { Task { await submitInput() } }
                                 .buttonStyle(.borderedProminent)
-                                .disabled(urlText.isEmpty || phase == .fetchingInfo)
+                                .disabled(urlText.isEmpty || phase == .fetchingInfo || phase == .searching || phase == .converting)
                         }
                         if phase == .fetchingInfo {
                             HStack { ProgressView(); Text("取得中...").foregroundStyle(.secondary) }
+                        }
+                        if phase == .searching {
+                            HStack { ProgressView(); Text("検索中...").foregroundStyle(.secondary) }
                         }
                     }
                     .padding()
                     .background(Color(.systemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(color: .black.opacity(0.06), radius: 8)
+
+                    // Search Results
+                    if phase == .results {
+                        if searchResults.isEmpty {
+                            ContentUnavailableView.search
+                        } else {
+                            VStack(spacing: 12) {
+                                ForEach(searchResults) { result in
+                                    Button {
+                                        urlText = result.url
+                                        Task { await fetchInfo() }
+                                    } label: {
+                                        HStack(spacing: 12) {
+                                            AsyncImage(url: URL(string: result.thumbnail)) { img in
+                                                img.resizable().aspectRatio(contentMode: .fill)
+                                            } placeholder: { Color(.systemGray5) }
+                                            .frame(width: 100, height: 68)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(result.title).font(.subheadline).fontWeight(.semibold).lineLimit(2)
+                                                    .foregroundStyle(.primary)
+                                                Text(result.channel).font(.caption).foregroundStyle(.secondary)
+                                            }
+                                            Spacer()
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding()
+                            .background(Color(.systemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: .black.opacity(0.06), radius: 8)
+                        }
+                    }
 
                     // Video Info
                     if let info = videoInfo {
@@ -218,9 +261,28 @@ struct ConvertView: View {
         Task { await fetchInfo() }
     }
 
+    func submitInput() async {
+        if isURLInput { await fetchInfo() } else { await runSearch() }
+    }
+
+    func runSearch() async {
+        let query = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return }
+        phase = .searching
+        videoInfo = nil
+        do {
+            searchResults = try await api.search(query: query)
+            phase = .results
+        } catch {
+            errorMessage = "検索に失敗しました。\nMacのサーバーが起動しているか確認してください。\n\(error.localizedDescription)"
+            phase = .error
+        }
+    }
+
     func fetchInfo() async {
         guard !urlText.isEmpty else { return }
         phase = .fetchingInfo
+        searchResults = []
         videoInfo = nil
         do {
             videoInfo = try await api.fetchInfo(url: urlText)
@@ -275,7 +337,7 @@ struct ConvertView: View {
     }
 
     func resetApp() {
-        urlText = ""; videoInfo = nil; phase = .idle; progress = 0; downloadedURL = nil; errorMessage = ""
+        urlText = ""; videoInfo = nil; searchResults = []; phase = .idle; progress = 0; downloadedURL = nil; errorMessage = ""
     }
 }
 

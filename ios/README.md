@@ -7,7 +7,7 @@ Macで動く [YouTube Audio Converter](https://github.com/fukurose-jun02/youtube
 
 ## 機能
 
-- YouTube URLを貼り付けて動画情報を取得
+- YouTube URLを貼り付けて動画情報を取得。URLでなくキーワードを入れると検索でき、結果をタップすると動画情報の取得に進む（v1.10〜、検索タブは廃止して変換タブに統合）
 - M4A / MP3 形式・音質（128〜320kbps）を選んで変換
 - 変換進捗のリアルタイム表示
 - ライブラリタブで再生・一時停止
@@ -18,7 +18,7 @@ Macで動く [YouTube Audio Converter](https://github.com/fukurose-jun02/youtube
 
 | タブ | 内容 |
 |---|---|
-| 変換 | URL入力・フォーマット選択・変換実行 |
+| 変換 | URL入力またはキーワード検索・フォーマット選択・変換実行 |
 | ライブラリ | ダウンロード済みファイルの再生・共有 |
 | 設定 | Macサーバーの接続先設定（IPアドレス・`.local`ホスト名どちらも可。「初期値に戻す」ボタンあり） |
 
