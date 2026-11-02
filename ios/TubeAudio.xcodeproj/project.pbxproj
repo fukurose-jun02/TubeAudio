@@ -380,7 +380,7 @@ B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicit
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -409,7 +409,7 @@ B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicit
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -436,7 +436,7 @@ B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicit
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -463,7 +463,7 @@ B3ECF7342FE4D5A3001C6438 /* TubeAudio.app */ = {isa = PBXFileReference; explicit
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.10;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.fukurose.TubeAudio.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

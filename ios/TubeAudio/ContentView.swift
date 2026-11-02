@@ -43,6 +43,7 @@ struct ConvertView: View {
     @State private var videoInfo: VideoInfo?
     @State private var selectedFormat = "m4a"
     @State private var selectedQuality = "192"
+    @State private var selectedCategory: AudioCategory = .radio
     @State private var phase: Phase = .idle
     @State private var progress: Double = 0
     @State private var progressLabel = ""
@@ -166,6 +167,15 @@ struct ConvertView: View {
                                             .clipShape(RoundedRectangle(cornerRadius: 8))
                                     }
                                 }
+                            }
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("カテゴリ").font(.caption).foregroundStyle(.secondary)
+                                Picker("カテゴリ", selection: $selectedCategory) {
+                                    ForEach(AudioCategory.allCases) { category in
+                                        Text(category.title).tag(category)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
                             }
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("品質").font(.caption).foregroundStyle(.secondary)
@@ -324,7 +334,8 @@ struct ConvertView: View {
                         duration: status.duration ?? 0,
                         uploadDate: status.upload_date ?? "",
                         viewCount: status.view_count ?? 0,
-                        channelIconURL: videoInfo?.channel_icon
+                        channelIconURL: videoInfo?.channel_icon,
+                        category: selectedCategory
                     ),
                     for: fileURL
                 )
@@ -337,7 +348,7 @@ struct ConvertView: View {
     }
 
     func resetApp() {
-        urlText = ""; videoInfo = nil; searchResults = []; phase = .idle; progress = 0; downloadedURL = nil; errorMessage = ""
+        urlText = ""; videoInfo = nil; searchResults = []; selectedCategory = .radio; phase = .idle; progress = 0; downloadedURL = nil; errorMessage = ""
     }
 }
 
@@ -347,6 +358,8 @@ struct LibraryView: View {
     @Environment(AudioPlayerManager.self) var audioPlayer
     @State private var files: [URL] = []
     @State private var modificationDates: [URL: Date] = [:]
+    @State private var categories: [URL: AudioCategory] = [:]
+    @State private var category: AudioCategory = .radio
     @State private var shareItem: ShareItem?
     @State private var filter: LibraryFilter = .all
     @State private var sortOrder: LibrarySortOrder = .newest
@@ -359,9 +372,25 @@ struct LibraryView: View {
                         description: Text("変換タブから音楽を追加しましょう"))
                 } else {
                     VStack(spacing: 0) {
+                        Picker("カテゴリ", selection: $category) {
+                            ForEach(AudioCategory.allCases) { option in
+                                Text(option.title).tag(option)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+
                         libraryControls
 
-                        if displayedFiles.isEmpty {
+                        if categoryFiles.isEmpty {
+                            ContentUnavailableView(
+                                "\(category.title)はまだありません",
+                                systemImage: "music.note",
+                                description: Text("変換タブで\(category.title)として追加するか、ほかのカテゴリから移しましょう")
+                            )
+                            .frame(maxHeight: .infinity)
+                        } else if displayedFiles.isEmpty {
                             ContentUnavailableView(
                                 "未再生の音声はありません",
                                 systemImage: "checkmark.circle",
@@ -373,7 +402,8 @@ struct LibraryView: View {
                                 ForEach(displayedFiles, id: \.self) { file in
                                     LibraryRow(
                                         file: file,
-                                        onShare: { shareItem = ShareItem(url: file) }
+                                        onShare: { shareItem = ShareItem(url: file) },
+                                        onMove: { move(file) }
                                     )
                                     .listRowInsets(EdgeInsets(top: 7, leading: 16, bottom: 7, trailing: 16))
                                     .listRowSeparator(.hidden)
@@ -390,6 +420,12 @@ struct LibraryView: View {
                                             Label("共有", systemImage: "square.and.arrow.up")
                                         }
                                         .tint(Color.accentColor)
+                                        Button {
+                                            move(file)
+                                        } label: {
+                                            Label("\(category.other.title)へ移動", systemImage: "arrow.left.arrow.right")
+                                        }
+                                        .tint(.orange)
                                     }
                                 }
                                 .onDelete(perform: deleteFiles)
@@ -422,11 +458,18 @@ struct LibraryView: View {
         ))?
             .filter { ["m4a", "mp3"].contains($0.pathExtension.lowercased()) }
             ?? []
+        categories = Dictionary(uniqueKeysWithValues: files.map { ($0, LibraryMetadataStore.category(for: $0)) })
         modificationDates = Dictionary(uniqueKeysWithValues: files.map { file in
             let date = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
                 ?? .distantPast
             return (file, date)
         })
+    }
+
+    private func move(_ file: URL) {
+        let target = (categories[file] ?? .radio).other
+        LibraryMetadataStore.setCategory(target, for: file)
+        categories[file] = target
     }
 
     func deleteFiles(at offsets: IndexSet) {
@@ -480,8 +523,12 @@ struct LibraryView: View {
         .padding(.vertical, 8)
     }
 
+    private var categoryFiles: [URL] {
+        files.filter { (categories[$0] ?? .radio) == category }
+    }
+
     private var displayedFiles: [URL] {
-        let filtered = files.filter { file in
+        let filtered = categoryFiles.filter { file in
             filter == .all || !audioPlayer.hasStarted(file)
         }
 
@@ -574,11 +621,15 @@ func formatViewCount(_ count: Int) -> String {
 struct LibraryRow: View {
     let file: URL
     let onShare: () -> Void
+    let onMove: () -> Void
     @Environment(AudioPlayerManager.self) var audioPlayer
 
     var body: some View {
         let isPlayingThis = audioPlayer.playingURL == file && audioPlayer.isPlaying
-        let meta = LibraryMetadataStore.metadata(for: file)
+        // 移し替えだけで作った空のメタデータは、情報なしとして扱う
+        let meta = LibraryMetadataStore.metadata(for: file).flatMap {
+            $0.duration > 0 || !$0.channel.isEmpty ? $0 : nil
+        }
 
         HStack(spacing: 14) {
             LibraryArtwork(
@@ -640,6 +691,9 @@ struct LibraryRow: View {
         .contextMenu {
             Button(action: onShare) {
                 Label("共有", systemImage: "square.and.arrow.up")
+            }
+            Button(action: onMove) {
+                Label("\(LibraryMetadataStore.category(for: file).other.title)へ移動", systemImage: "arrow.left.arrow.right")
             }
         }
     }
