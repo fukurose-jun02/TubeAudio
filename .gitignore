@@ -21,3 +21,6 @@ ios/logs/
 
 # Claude Code（マシン固有のローカル設定）
 .claude/settings.local.json
+
+# Xcodeが個人ごとに自動で書き換える表示設定
+xcuserdata/
